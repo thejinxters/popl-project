@@ -164,7 +164,8 @@ the next method to run.  It will either return the next @around method, an
 error, or the first @before method.  These can be used for things such as
 modifying input arguments that will impact future methods as well.
 
-If a custom ordering of methods is required, we can use the always_overrides function.  An example of this is shown in **code block F**.
+If a custom ordering of methods is required, we can use the always_overrides
+function.  An example of this is shown in **code block F**.
 
 #####Code Block F: Example from PEP 3124
 ```python
