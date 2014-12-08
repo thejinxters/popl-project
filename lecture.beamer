@@ -5,6 +5,9 @@ $endif$
 $if(colortheme)$
 \usecolortheme{$colortheme$}
 $endif$
+$if(themefont)$
+\usefonttheme[onlylarge]{$themefont$}
+$endif$
 \usepackage{amssymb,amsmath,mathpartir}
 \usepackage{longtable}
 \usepackage{ifxetex,ifluatex}
