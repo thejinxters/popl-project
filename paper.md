@@ -277,8 +277,9 @@ implementation.
 #####Code Block I: https://github.com/ceronman/typeannotations
 
 ```python
-class IWriteMapping(Interface):     @abstract
+class IWriteMapping(Interface):
 
+@abstract
 def __setitem__(self, key, value):
     """This has to be implemented"""
 
