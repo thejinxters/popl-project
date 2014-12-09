@@ -1,5 +1,6 @@
 % PEP 3124 - Overloading, Generic Functions, Interfaces, and Adaptation
 % Abeve Tayachow, Brandon Mikulka, Daniel Palmer
+% Team Mikulka Palmer Tayachow
 
 
 PEP 3124 - The Problem
@@ -7,13 +8,13 @@ PEP 3124 - The Problem
 * Written by Phillip J. Eby
 * Dealing varying arguments
 * Inflexible libraries/applications
-* based on peak.rules.core libaray
 
 The Curent Solution
 ===================
 ```python
 def flatten(ob):
-    if isinstance(ob, basestring) or not isinstance(ob, Iterable):
+    if isinstance(ob, basestring) or not
+            isinstance(ob, Iterable):
         yield ob
     else:
         for o in ob:
@@ -81,17 +82,15 @@ def foo(bar:int, baz:object):
     pass
 
 @overload
-def foo(bar:int, baz:int):
+def foo(bar:object, baz:int):
     pass
 ```
 
-Ambiguity
-=========
-* AmbiguousMethods Error
+Ordering
+========
 * `__proceed__` function returns a callable to the next-most specific method
 * Specific methods will still be run first
 * `@before`, `@after`, and `@around` decorators
-* Chaining certain methods together
 
 `@before` Example
 =================
@@ -101,7 +100,8 @@ def begin_transaction(db):
 
 @before(begin_transaction)
 def check_single_access(db: SingletonDB):
-    if db.inuse: raise TransactionError("Database already in use")
+    if db.inuse: raise TransactionError(
+            "Database already in use")
 ```
 
 Discussion
@@ -116,7 +116,7 @@ Discussion
 
 Overloading Classes
 ===================
-* Can be applied to classes and methdos
+* Can be applied to classes and methods
 * Ordering classes and determining method order
 
 Class Overloading Example
@@ -133,7 +133,7 @@ class A(object):
 
 
 class B(A):
-    foo = A.foo     # foo must be defined in local namespace
+    foo = A.foo     # foo defined in local namespace
 
     @overload
     def foo(__proceed__, self, ob:Iterable):
@@ -144,10 +144,6 @@ class B(A):
 Discussion on Overloading Classes
 =================================
 * Python 3.0 Problems
-* “The way things currently stand for 3.0, I actually *won't* be able to make a
-  GF implementation that handles the ‘first argument should be of the containing
-  class’ rule without users having an explicit metaclass or class decorator that
-  supports it” -Eby
 * Issue from PEP 3115:
 * 'reqires that a class' metadata be determined before exectution
 * Hard to port peak.rules.core library
@@ -200,13 +196,10 @@ def update(self, other:IReadMapping):
 
 More about `@abstract` and casting
 ==================================
-* `@abstract` methods cannot be accessed directly through the interface
 * Methods must be overloaded with the appropriate `@when` or `@overload`
   decorator
 * In other words: `@abstract` is designed to be overloaded
 * Interfaces can be used as type specifiers
-* Class/Function aguments need to be cast in order to be given access to the
-  interface's methods
 
 Conclusion
 ==========
