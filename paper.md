@@ -20,7 +20,7 @@ generics.
 Overloading
 ===========
 
-One of the key aspects of the overloading api is the concept of the `@overload`
+One of the key aspects of the overloading API is the concept of the `@overload`
 decorator. When you have a function that could potentially take many types of
 arguments, the classic python way of dealing with this would be to create a
 series of `if` statements checking for the type of the argument. The `@overload`
@@ -94,7 +94,7 @@ def flatten_basestring(ob):
 
 The main idea behind this functionality is to allow for expansion of code that
 you did not write, allowing for more generically typed functions. The most
-common use for this overloading, would be to accept parameters from an Api that
+common use for this overloading, would be to accept parameters from an API that
 does not necessarily give back the same object type each time it is called. This
 decorator would allow programmers to create an API that gives a uniform way to
 access functionality within libraries, frameworks, and applications, specifying
@@ -134,16 +134,16 @@ def foo(bar:int, baz:int):
     pass
 ```
 
-As you can see, one function takes an obj and an int as parameters, while the
+As you can see, one function takes an `obj` and an int as parameters, while the
 other takes two integers.  If two integers are passed into the function, the
-second method will run as int, int is more specific than int, obj despite both
+second method will run as `int`, `int` is more specific than `int`, `obj` despite both
 technically being correct.  If it is ambiguous as to which is more specific, an
 AmbiguousMethods error will be thrown.
 
 In the case of ambiguous methods, order can be declared through use of the
 `__proceed__` function which simply returns a callable to the next-most specific
 method. In order to run certain methods every time a function is called,
-decorators such as `@before`, `@after`, and @around can be used.  These are
+decorators such as `@before`, `@after`, and `@around` can be used.  These are
 typically used for establishing pre-conditions and post-conditions.  If a method
 is specified as `@before`, it will run before the primary function.  An example
 of setting a pre-condition is shown in **code block E**, where `@before` is used
