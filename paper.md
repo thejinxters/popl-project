@@ -3,25 +3,29 @@
 
 Introduction
 ============
-There is no simple way to allow functions to deal with
-different argument types in Python.  If there is a need to deal with varying
-arguments, the easiest tactic is with type checking using a number of if-
-statements.  This is an inflexible solution.  PEP 3124 proposes a standard
-library module that will implement dynamic overloading, which allows a function
-to react differently to distinct argument types, in essence introducing generic
-typing and interfacing to Python 3.0.  Through use of decorators, we can easily
-control the ordering and selection of which code to run with certain inputs,
-making it much more versatile than the current implementation available in
-Python.
+
+There is no simple way to allow functions to deal with different argument types
+in Python.  If there is a need to deal with varying arguments, the easiest
+tactic is with type checking using a number of if- statements.  This is an
+inflexible solution.  Python PEP 3124 proposes a new library for overloading
+that would allow for generic programming features to Python 3.0 that would
+include dynamic overloading, interfaces, adaptations, method combining, and
+certain forms of aspect-oriented programming.  Through use of decorators, we can
+easily control the ordering and selection of which code to run with certain
+inputs, making it much more versatile than the current implementation available
+in Python. According to the author, this proposal will allow developers to
+implement their own specialized interface types as well as other forms of
+generics.
 
 Overloading
 ===========
-One of the key aspects of the overloading api is the
-concept of the @overload decorator. When you have a function that could
-potentially take many types of arguments, the classic python way of dealing with
-this would be to create a series of if statements checking for the type of the
-argument. The @overload decorator allows you to redefine the function for a
-specific type as you can see in **Code block A**.
+
+One of the key aspects of the overloading api is the concept of the `@overload`
+decorator. When you have a function that could potentially take many types of
+arguments, the classic python way of dealing with this would be to create a
+series of `if` statements checking for the type of the argument. The `@overload`
+decorator allows you to redefine the function for a specific type as you can see
+in **Code block A**.
 
 #####Code Block A: Example from PEP 3124
 
@@ -51,21 +55,21 @@ block A** would equate to the current python implementation in **Code block B**.
 #####Code Block B: Example from PEP 3124
 ```python
 def flatten(ob):
-        if isinstance(ob, basestring) or not isinstance(ob, Iterable):
+    if isinstance(ob, basestring) or not isinstance(ob, Iterable):
+        yield ob
+    else:
+        for o in ob:
+            for ob in flatten(o):
                 yield ob
-        else:
-                for o in ob:
-                        for ob in flatten(o):
-                                yield ob
 
 ```
 
 Furthermore, the author Phillip J. Eby reccommends the use of a more general
-@when decorator for use when the function you are trying to overload is
-unbounded or bounded to a different namespace. In addition, the @when decorator
+`@when` decorator for use when the function you are trying to overload is
+unbounded or bounded to a different namespace. In addition, the `@when` decorator
 will allow you to use a different function name for overriding by accepting a
 required function name and an optionional ‘predicate’ object to be passed into
-the decorator as shown in the last examples of **Code block C**.
+the decorator as shown in the last example of **Code block C**.
 
 #####Code Block C: Example from PEP 3124
 ```python
@@ -91,7 +95,7 @@ def flatten_basestring(ob):
 The main idea behind this functionality is to allow for expansion of code that
 you did not write, allowing for more generically typed functions. The most
 common use for this overloading, would be to accept parameters from an Api that
-doesn’t necessarily give back the same object type each time it is called. This
+does not necessarily give back the same object type each time it is called. This
 decorator would allow programmers to create an API that gives a uniform way to
 access functionality within libraries, frameworks, and applications, specifying
 what to do with what type of object.
@@ -114,11 +118,11 @@ possibly be removed.” - Paul Moore
 
 Combination and Overriding
 ==========================
-If a function is being
-redeclared with overloading, we need a way to decide which to run and in which
-order they should do so.  If a single method is to be used, the method that most
-accurately matches the calling parameters will be used, such as in **Code block
-D**.
+
+If a function is being redeclared with overloading, we need a way to determine
+which function to run first.  If a single method is to be used, the method that
+most accurately matches the calling parameters will run first, such as in **Code
+block D**.
 
 #####Code Block D: Example from PEP 3124
 ```python
@@ -133,17 +137,17 @@ def foo(bar:int, baz:int):
 As you can see, one function takes an obj and an int as parameters, while the
 other takes two integers.  If two integers are passed into the function, the
 second method will run as int, int is more specific than int, obj despite both
-technically being correct.  If it is ambiguous which is more specific, an
+technically being correct.  If it is ambiguous as to which is more specific, an
 AmbiguousMethods error will be thrown.
 
 In the case of ambiguous methods, order can be declared through use of the
-__proceed__ function which simply returns a callable to the next-most specific
+`__proceed__` function which simply returns a callable to the next-most specific
 method. In order to run certain methods every time a function is called,
-decorators such as @before, @after, and @around can be used.  These are
+decorators such as `@before`, `@after`, and @around can be used.  These are
 typically used for establishing pre-conditions and post-conditions.  If a method
-is specified as @before, it will run before the primary function.  An example of
-setting a pre-condition is shown in **code block E**, where @before is used to
-check if a database is available before the main function is called.
+is specified as `@before`, it will run before the primary function.  An example
+of setting a pre-condition is shown in **code block E**, where `@before` is used
+to check if a database is available before the main function is called.
 
 #####Code Block E: Example from PEP 3124
 ```python
@@ -155,16 +159,17 @@ def check_single_access(db: SingletonDB):
     if db.inuse: raise TransactionError("Database already in use")
 ```
 
-If there are multiple @before methods, they are run from most to least specific.
-To run methods after the primary function, the @after decorator is used.  In
-contrast to @before, however, methods run after the primary function are ordered
-least to most specific.  @around specifies methods to be run prior the first
-@before method.  @around methods must use the __proceed__ function to determine
-the next method to run.  It will either return the next @around method, an
-error, or the first @before method.  These can be used for things such as
-modifying input arguments that will impact future methods as well.
+If there are multiple `@before` methods, they are run from most to least
+specific. To run methods after the primary function, the `@after` decorator is
+used.  In contrast to `@before`, however, methods run after the primary function
+are ordered least to most specific.  `@around` specifies methods to be run prior
+the first `@before` method.  `@around` methods must use the `__proceed__`
+function to determine the next method to run.  It will either return the next
+`@around` method, an error, or the first `@before` method.  These can be used
+for things such as modifying input arguments that will impact future methods as
+well.
 
-If a custom ordering of methods is required, we can use the always_overrides
+If a custom ordering of methods is required, we can use the `always_overrides`
 function.  An example of this is shown in **code block F**.
 
 #####Code Block F: Example from PEP 3124
@@ -216,11 +221,12 @@ class B(A):
         return __proceed__(self, ob)
 ```
 
-Given the foo method being called with an Iterable inside class B, the order of
-method calls would print the following: “B got an Itterable,” “it’s iterable!,”
-“got an object.” This is because foo inside class B uses the __proceed__ call to
-call the ‘Iterable’ version of the class inside class A. This function also has
-a __proceed__ call which then calls the base method ‘foo’ in class A.
+Given the foo method being called with an `Iterable` inside class `B`, the order
+of method calls would print the following: “B got an Itterable,” “it’s
+iterable!,” “got an object.” This is because foo inside class `B` uses the
+`__proceed__` call to call the `Iterable` version of the class inside class `A`.
+This function also has a `__proceed__` call which then calls the base method
+`foo` in class `A`.
 
 Overloading classes in this manner is in contention because of new
 implementation in Python 3.0. Eby states, “The way things currently stand for
@@ -237,13 +243,13 @@ pythonic way.
 
 Interface and adaptation
 ========================
-The overloading module also
-provides a convenient implementation of interfaces and adaptation. The interface
-class accepts an object as its argument and binds all its methods to that
-object. It allows to define interfaces that are checked dynamically. Hence,
-There is no need to explicitly indicate when an object or a class implements a
-given interface, as it shown in **code block H**; Person class is the interface
-of Developer class.
+
+The overloading module also provides a convenient implementation of interfaces
+and adaptation. The interface class accepts an object as its argument and binds
+all of its methods to that object. Defined interfaces are checked dynamically;
+hence, There is no need to explicitly indicate when an object or a class
+implements a given interface. In **code block H**, `Person` class is the
+interface of `Developer` class.
 
 #####Code Block H: https://github.com/ceronman/typeannotations
 ```python
@@ -264,14 +270,14 @@ isinstance(Developer('bill', 20), Person) #Returns True
 ```
 
 A class “adapts” to an interface so long as the instance does not raise a
-NoApplicableMethods within the methods of the interface.
+`NoApplicableMethods` within any method of the interface.
 
 An interface class can have an empty generic function as well as a full
-executable function without the @abstract decorator. @abstract decorator creates
-an empty generic function that could be used within an interface class, but also
-could be used outside the class. For instance, in the **Code block I**
-IWriteMapping is an interface that has a __setitem__ generic function with
-@abstract decorator as well as an update method with a layout of its
+executable function without the `@abstract` decorator. The `@abstract` decorator
+creates an empty generic function that could be used within an interface class,
+but also could be used outside the class. For instance, in the **Code block I**
+`IWriteMapping` is an interface that has a `__setitem__` generic function with
+`@abstract` decorator, as well as an update method with a layout of its
 implementation.
 
 #####Code Block I: https://github.com/ceronman/typeannotations
@@ -292,12 +298,12 @@ def update(self, other:IReadMapping):
 In the case a different implementation is wanted from the update method, an
 appropriate overload can be used as previously discussed.
 
-In Interface class definition, @abstract decorator can be added in order to
-ensure that the particular function cannot be accessed directly through the
-interface class, but only through a class that implements the interface
-template. Functions who have @abstract decorator overloaded methods must be
-added with the appropriate decorator (@when, @before, etc.) in order to make
-them executable.  Unlike the previous overloaded function, the @abstract
+In the `Interface` class definition, the `@abstract` decorator can be added in
+order to ensure that the particular function cannot be accessed directly through
+the interface class, but only through a class that implements the interface
+template. Functions who have `@abstract` decorator overloaded methods must be
+added with the appropriate decorator (`@when`, `@before`, etc.) in order to make
+them executable.  Unlike the previous overloaded function, the `@abstract`
 decorator function is designed to be overloaded, since it doesn’t have any
 implementation to begin with.
 
@@ -320,19 +326,20 @@ def traverse(g: IGraph, s: IStack):
 
 Conclusion
 ==========
-Implementing the changes suggested by this PEP would have
-numerous effects.  We will have increased flexibility with generic functions
-that may take different types of input.  Control is increased over multi-use
-functions, and generic functions will be easier to write when the intended usage
-is unknown.  However, there have been concerns expressed about how this will
-affect readability of code.  PEP 3124 allows for a function to be declared
-differently in separate areas of the code, potentially making it tough to
-accurately determine what a function actually does -- an area of much
-contention. While this concern is valid, there are still ways of accomplishing
-this with practices such as monkeypatching and code substitution. This PEP’s
-purpos is to allow for the ability to extend a library or application to work
-with data types the author might not have contemplated.  If used responsibly,
-this proposal can add functionality to the language without major downsides.
-PEP 3124 currently has a status of `Deferred` because it is not yet completed
-and it is not heavily supported by the community.
+
+Implementing the changes suggested by this PEP will have numerous effects.  We
+will have increased flexibility with generic functions that may take different
+types of input.  Control is increased over multi-use functions, and generic
+functions will be easier to write when the intended usage is unknown.  However,
+there have been concerns expressed about how this will affect readability of
+code.  PEP 3124 allows for a function to be declared differently in separate
+areas of the code, potentially making it tough to accurately determine what a
+function actually does -- an area of much contention. While this concern is
+valid, there are still ways of accomplishing this with practices such as
+monkeypatching and code substitution. This PEP’s purpose is to allow for the
+ability to extend a library or application to work with data types the author
+might not have contemplated.  If used responsibly, this proposal can add
+functionality to the language without major downsides. PEP 3124 currently has a
+status of `Deferred` because it is not yet completed and it is not heavily
+supported by the community.
 
